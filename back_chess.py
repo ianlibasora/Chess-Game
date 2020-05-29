@@ -1,38 +1,29 @@
 #!/usr/bin/env python3
 
-"""Chess game objects"""
+"""Chess game engine"""
 
-class Piece(object):
-   def __init__(self, team):
-      self.team = team
+import pygame
 
-   def __str__(self):
-      return self.team
+class Game(object):
+   def __init__(self):
+      self.board = [
+         ["b_R", "b_N", "b_B", "b_Q", "b_K", "b_B", "b_N", "b_R"],
+         ["b_P", "b_P", "b_P", "b_P", "b_P", "b_P", "b_P", "b_P"],
+         ["-", "-", "-", "-", "-", "-", "-", "-"],
+         ["-", "-", "-", "-", "-", "-", "-", "-"],
+         ["-", "-", "-", "-", "-", "-", "-", "-"],
+         ["-", "-", "-", "-", "-", "-", "-", "-"],
+         ["w_P", "w_P", "w_P", "w_P", "w_P", "w_P", "w_P", "w_P"],
+         ["w_R", "w_N", "w_B", "w_Q", "w_K", "w_B", "w_N", "w_R"],
+      ]
+      self.white = True
 
-class Pawn(Piece):
-   pass
-
-class Rook(Piece):
-   pass
-
-class Horse(Piece):
-   pass
-
-class Bishop(Piece):
-   pass
-
-class King(Piece):
-   pass
-
-class Queen(Piece):
-   pass
 
 def main():
-   print("chess-obj tests")
+   print("chess engine tests")
 
-   one = Piece("Black")
-   two = Piece("White")
-   
+   game = Game()
+   print(board.board)
 
 if __name__ == "__main__":
    main()
