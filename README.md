@@ -4,7 +4,7 @@ Chess game using Python PyGame module. WIP
 
 ### Planned:
 - Log win/loss of session
-- Log lost pieces
+- Allowing rematch # maybe
 - OOP
 - Movement check (move validity check)
 - Movement assist (highlight available movements of piece)
