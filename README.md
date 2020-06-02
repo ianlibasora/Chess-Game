@@ -2,6 +2,10 @@
 
 Chess game using Python PyGame module.
 
+If run with argument "1":
+- Rule checking will be ignored ie players may move at their own will. This includes illegal moves
+- Team checking will remain in effect. This is to stop double clicks on pieces of same colour
+
 ## WIP
 
 ### Planned:
@@ -18,6 +22,7 @@ Chess game using Python PyGame module.
 ### Done:
 - Undo
 - Team check
+- Basic pawn behaviour
 
 --------------------------------------------------------------
 

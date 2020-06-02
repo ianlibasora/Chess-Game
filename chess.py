@@ -4,6 +4,7 @@
 
 import back_chess as ch
 import pygame
+from sys import argv
 
 def LoadImg():
    imgs = {}
@@ -39,10 +40,19 @@ def main():
    print("Chess Game running")
    # other stuff here
 
+   try:
+      args = argv[1:]
+      if args[0] == "1":
+         ruleOveride = True
+   except IndexError:
+      ruleOveride = False
+      print("No args, running normally")
 
    pygame.init()
    game = ch.Game()
    imgs = LoadImg()
+   validMV = game.getValid()
+   mvMade = False
 
    screen = pygame.display.set_mode((600, 720))
    pygame.display.set_caption("Chess")
@@ -72,24 +82,32 @@ def main():
                clickLog.append(pos)
             
             if len(clickLog) == 2:
-               if game.turnCheck(clickLog[0]):
+               if game.turnCheck(clickLog):
                   mv = ch.Move(clickLog, game.board)
-                  print(mv)
-                  game.mkMove(mv)
+                  print(clickLog)
+
+                  if ruleOveride or mv in validMV:
+                     game.mkMove(mv)
+                     print(mv)
+                     game.nextPlyr()
+                     mvMade = True
                   clickSel = ()
                   clickLog = []
                else:
                   clickSel = ()
                   clickLog = []
                   if game.white:
-                     print("Wrong turn, current turn: White")
+                     print("Invalid move, current turn: White")
                   else:
-                     print("Wrong turn, current turn: Black")
+                     print("Invalid move, current turn: Black")
          elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_z:
                game.undo()
+               mvMade = True
 
-
+      if mvMade:
+         validMV = game.getValid()
+         mvMade = False
 
 
 
