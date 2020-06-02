@@ -16,7 +16,8 @@ def LoadImg():
    return imgs
 
 def drawGame(screen, imgs, game):
-   screen.fill((255, 255, 204))
+   screen.fill((191, 191, 191))
+   pygame.draw.line(screen, pygame.Color("black"), (0, 600), (600, 600), 4 )
    drawBoard(screen)
    drawPieces(screen, imgs, game.board)
    # drawTime(screen, game.white)
@@ -48,11 +49,11 @@ def main():
    icon = pygame.image.load("assets/chess_icon.png")
    pygame.display.set_icon(icon)
 
+
    drawGame(screen, imgs, game)
-
+   clickSel = ()
+   clickLog = []
    running = True
-   s_stop = e_stop = False
-
    while running:
       pygame.time.delay(50)
 
@@ -61,20 +62,36 @@ def main():
          if event.type == pygame.QUIT:
             running = False
 
-         if pygame.mouse.get_pressed() and event.type == pygame.MOUSEBUTTONDOWN and s_stop != True:
-            start = game.getIndex(pygame.mouse.get_pos())
-            s_stop = True
-         elif pygame.mouse.get_pressed() and event.type == pygame.MOUSEBUTTONDOWN and s_stop is True and e_stop != True:
-            end = game.getIndex(pygame.mouse.get_pos())
-            e_stop = True
-      
-      if s_stop and e_stop:
-         if game.verify(start, end):
-            print(f"{start} moving {end}")
-            game.move(start, end)
-         else:
-            print("Invalid move")
-         s_stop = e_stop = False
+         if pygame.mouse.get_pressed() and event.type == pygame.MOUSEBUTTONDOWN:
+            pos = game.getIndex(pygame.mouse.get_pos())
+            if pos == clickSel or pos is None:
+               clickSel = ()
+               clickLog = []
+            else:
+               clickSel = pos
+               clickLog.append(pos)
+            
+            if len(clickLog) == 2:
+               if game.turnCheck(clickLog[0]):
+                  mv = ch.Move(clickLog, game.board)
+                  print(mv)
+                  game.mkMove(mv)
+                  clickSel = ()
+                  clickLog = []
+               else:
+                  clickSel = ()
+                  clickLog = []
+                  if game.white:
+                     print("Wrong turn, current turn: White")
+                  else:
+                     print("Wrong turn, current turn: Black")
+         elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_z:
+               game.undo()
+
+
+
+
 
 
       # validity checks

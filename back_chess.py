@@ -3,7 +3,7 @@
 """Chess game engine"""
 
 import pygame
-from math import floor
+
 
 class Game(object):
    def __init__(self):
@@ -18,76 +18,63 @@ class Game(object):
          ["w_R", "w_N", "w_B", "w_Q", "w_K", "w_B", "w_N", "w_R"],
       ]
       self.white = True
+      self.moves = []
 
-   def move(self, srt, end):
-      if self.board[end[0]][end[1]] != "-":
-         self.board[srt[0]][srt[1]], self.board[end[0]][end[1]] = "-", self.board[srt[0]][srt[1]]
-      else:   
-         self.board[srt[0]][srt[1]], self.board[end[0]][end[1]] = self.board[end[0]][end[1]], self.board[srt[0]][srt[1]]
+   def mkMove(self, other):
+      self.board[other.start[0]][other.start[1]], self.board[other.end[0]][other.end[1]] = "-", other.p_moved
+      self.moves.append(other)
+      self.white = not self.white
 
-      # validity check before move
-      # player change after move
+   def turnCheck(self, other):
       if self.white:
-         self.white = False
+         return self.board[other[0]][other[1]][0] == "w"
       else:
-         self.white = True
+         return self.board[other[0]][other[1]][0] == "b"
 
-   def pawn(self, start, end):
-      pass
-
-   def rook(self, start, end):
-      pass
-
-   def knight(self, start, end):
-      pass
-
-   def bishop(self, start, end):
-      pass
-
-   def king(self, start, end):
-      pass
-
-   def queen(self, start, end):
-      pass
-
-   def boardCheck(self, start, end):
-      if start[0] < 8 and start[1] < 8 and end[0] < 8 and end[1] < 8:
-         return self.board[start[0]][start[1]] != "-"
-      
-
-   def turnCheck(self, start, end):
-      if self.white:
-         if self.board[start[0]][start[1]][0] == "b":
-            return False
-         return not (self.board[start[0]][start[1]][0] == "w" and self.board[end[0]][end[1]][0] == "w")
+   def undo(self):
+      if len(self.moves) != 0:
+         last = self.moves[-1]
+         self.board[last.start[0]][last.start[1]], self.board[last.end[0]][last.end[1]] = last.p_moved, last.p_captured
+         print(f"Undid {last}")
+         self.moves.pop()
+         self.white = not self.white
       else:
-         if self.board[start[0]][start[1]][0] == "w":
-            return False
-         return not (self.board[start[0]][start[1]][0] == "b" and self.board[end[0]][end[1]][0] == "b")
-
-   def ruleCheck(self, start, end):
-      if self.board[start[0]][start[1]][-1] == "P":
-         return self.pawn(start, end)
-      elif self.board[start[0]][start[1]][-1] == "R":
-         return self.rook(start, end)
-      elif self.board[start[0]][start[1]][-1] == "N":
-         return self.knight(start, end)
-      elif self.board[start[0]][start[1]][-1] == "B":
-         return self.bishop(start, end)
-      elif self.board[start[0]][start[1]][-1] == "K":
-         return self.king(start, end)
-      elif self.board[start[0]][start[1]][-1] == "Q":
-         return self.queen(start, end)
-
-   def verify(self, start, end):
-      if self.boardCheck(start, end):
-         return self.turnCheck(start, end)
-      return False
+         print("Max undo")
 
    @staticmethod
    def getIndex(inp):
-      (y, x) = floor(inp[1] / 75), floor(inp[0] / 75)
-      return (y, x)
+      (y, x) = inp[1] // 75, inp[0] // 75
+      if y < 0 or 7 < y or x < 0 or 7 < x:
+         return None
+      else:
+         return (y, x)
+
+class Move(object):
+   RnkToRow = {
+      "1": 7, "2":6, "3": 5, "4": 4,
+      "5": 3, "6": 2, "7": 1, "8": 0
+   }
+   RowToRnk = {v: k for k, v in RnkToRow.items()}
+   FileToCol = {
+      "a": 0, "b": 1, "c": 2, "d": 3,
+      "e": 4, "f": 5, "g": 6, "h": 7
+   }
+   ColToFile = {v: k for k, v in FileToCol.items()}
+
+   def __init__(self, clickLog, board):
+      self.start = (clickLog[0][0], clickLog[0][1])
+      self.end = (clickLog[1][0], clickLog[1][1])
+      self.p_moved = board[self.start[0]][self.start[1]]
+      self.p_captured  =board[self.end[0]][self.end[1]]
+
+   def getNotation(self):
+      return f"{self.getRnkFile(self.start[0], self.start[1])} -> {self.getRnkFile(self.end[0], self.end[1])}"
+
+   def getRnkFile(self, r, c):
+      return self.ColToFile[c] + self.RowToRnk[r]
+
+   def __str__(self):
+      return self.getNotation()
 
 def main():
    print("Chess backend tests")
@@ -97,11 +84,26 @@ def main():
    for x in game.board:
       print(x)
 
-   start = (6, 0)
-   end = (5, 0)
-   print(game.verify(start, end))
-   print("------------------------")
-   game.ruleCheck(start, end)
+   # start = (6, 1)
+   # end = (5, 0)
+   
+   clickLog = [(6, 1), (5, 1)]
+
+   mv = Move(clickLog, game.board)
+   print(mv)
+   game.mkMove(mv)
+
+   for x in game.board:
+      print(x)
+
+   print("--------------------------")
+   for x in game.moves:
+      print(x)
+   
+   print(game.undo())
+
+   for x in game.board:
+      print(x)
    
 if __name__ == "__main__":
    main()

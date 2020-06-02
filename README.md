@@ -1,19 +1,23 @@
 # Chess-Game with Python
 
-Chess game using Python PyGame module. WIP
+Chess game using Python PyGame module.
+
+## WIP
 
 ### Planned:
 - Log win/loss of session
 - Allowing rematch # maybe
-- OOP
 - Movement check (move validity check)
 - Movement assist (highlight available movements of piece)
 - Game timer
-- Promotion
+- Promotion, # castling/en passent maybe
 
 ### Needs:
-- Checkmate check
-- Draw check
+- Rule checks
+
+### Done:
+- Undo
+- Team check
 
 --------------------------------------------------------------
 
