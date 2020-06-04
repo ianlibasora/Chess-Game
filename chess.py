@@ -5,6 +5,7 @@
 import back_chess as ch
 import pygame
 from sys import argv
+import time
 
 def LoadImg():
    imgs = {}
@@ -40,11 +41,14 @@ def main():
    print("Chess Game running")
    # other stuff here
 
-   try:
-      args = argv[1:]
+   args = argv[1:]
+   if len(args) != 0:
       if args[0] == "1":
          ruleOveride = True
-   except IndexError:
+      else:
+         ruleOveride = False
+         print("No args, running normally")
+   else:
       ruleOveride = False
       print("No args, running normally")
 
@@ -61,12 +65,10 @@ def main():
 
 
    drawGame(screen, imgs, game)
-   clickSel = ()
-   clickLog = []
+   clickSel, clickLog = (), []
    running = True
    while running:
       pygame.time.delay(50)
-
 
       for event in pygame.event.get():
          if event.type == pygame.QUIT:
@@ -84,13 +86,14 @@ def main():
             if len(clickLog) == 2:
                if game.turnCheck(clickLog):
                   mv = ch.Move(clickLog, game.board)
-                  print(clickLog)
 
                   if ruleOveride or mv in validMV:
                      game.mkMove(mv)
                      print(mv)
                      game.nextPlyr()
                      mvMade = True
+                  else:
+                     print("Invalid move, click error")
                   clickSel = ()
                   clickLog = []
                else:
@@ -109,20 +112,12 @@ def main():
          validMV = game.getValid()
          mvMade = False
 
-
-
-
-      # validity checks
-      # ch.move(start, end)
-      # need sys to find mouse clicks, corresponding pos, corresponding grid ref.
-      
-
       drawGame(screen, imgs, game)
-
       pygame.display.update()
 
    pygame.quit()
    print("Game exit")
+   
 
 if __name__ == "__main__":
    main()

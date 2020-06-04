@@ -1,12 +1,12 @@
 # Chess-Game with Python
 
-Chess game using Python PyGame module.
+Classic game of chess using Python's PyGame module.
 
 If run with argument "1":
 - Rule checking will be ignored ie players may move at their own will. This includes illegal moves
 - Team checking will remain in effect. This is to stop double clicks on pieces of same colour
 
-## WIP
+## WIP 
 
 ### Planned:
 - Log win/loss of session
@@ -18,11 +18,14 @@ If run with argument "1":
 
 ### Needs:
 - Rule checks
+- Running ui
 
 ### Done:
 - Undo
 - Team check
-- Basic pawn behaviour
+- Basic piece behaviour
+
+Last updated: 3.Jun.2020, Python 3.8.1
 
 --------------------------------------------------------------
 

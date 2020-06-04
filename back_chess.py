@@ -4,7 +4,6 @@
 
 import pygame
 
-
 class Game(object):
    def __init__(self):
       self.board = [
@@ -42,14 +41,13 @@ class Game(object):
       p_moves = []
       for r in range(8):
          for c in range(8):
-            piece = self.board[r][c][-1]
-            plyr = self.board[r][c][0]
-            if (plyr == "w" and self.white) or (plyr == "b" and not self.white):
+            plyr, piece = self.board[r][c][0], self.board[r][c][-1]
+            if plyr != "-":
                self.dct[piece](r, c, p_moves)
       return p_moves
 
    def pawn(self, r, c, p_moves):
-      if self.white:
+      if self.board[r][c][0] == "w":
          if self.board[r - 1][c] == "-":
             p_moves.append(Move(((r, c), (r - 1, c)), self.board))
             if r == 6 and self.board[r - 2][c] == "-":
@@ -61,7 +59,6 @@ class Game(object):
          if c + 1 < 8:
             if self.board[r - 1][c + 1][0] == "b":
                p_moves.append(Move(((r, c), (r - 1, c + 1)), self.board))
-         
       else:
          if self.board[r + 1][c] == "-":
             p_moves.append(Move(((r, c), (r + 1, c)), self.board))
@@ -76,19 +73,229 @@ class Game(object):
                p_moves.append(Move(((r, c), (r + 1, c + 1)), self.board))
 
    def rook(self ,r, c, p_moves):
-      pass
+      i = 1
+      nrun = srun = erun = wrun = True
+      if self.board[r][c][0] == "w":
+         while nrun or srun or erun or wrun:
+            if r - i < 0:
+               nrun = False
+            if nrun:
+               if self.board[r - i][c] == "-":
+                  p_moves.append(Move(((r, c), (r - i, c)), self.board))
+               elif self.board[r - i][c][0] == "b":
+                  p_moves.append(Move(((r, c), (r - i, c)), self.board))
+                  nrun = False
+               else:
+                  nrun = False
+            
+            if 7 < r + i:
+               srun = False
+            if srun:
+               if self.board[r + i][c] == "-":
+                  p_moves.append(Move(((r, c), (r + i, c)), self.board))
+               elif self.board[r + i][c][0] == "b":
+                  p_moves.append(Move(((r, c), (r + i, c)), self.board))
+                  srun = False
+               else:
+                  srun = False
+            
+            if c - i < 0:
+               wrun = False
+            if wrun:
+               if self.board[r][c - i] == "-":
+                  p_moves.append(Move(((r, c), (r, c - i)), self.board))
+               elif self.board[r][c - i][0] == "b":
+                  p_moves.append(Move(((r, c), (r, c - i)), self.board))
+                  wrun = False
+               else:
+                  wrun = False
+            
+            if 7 < c + i:
+               erun = False
+            if erun:
+               if self.board[r][c + i] == "-":
+                  p_moves.append(Move(((r, c), (r, c + i)), self.board))
+               elif self.board[r][c + i][0] == "b":
+                  p_moves.append(Move(((r, c), (r, c + i)), self.board))
+                  erun = False
+               else:
+                  erun = False
+            i += 1
+      else:
+         while nrun or srun or erun or wrun:
+            if 7 < r + i:
+               srun = False
+            if srun:
+               if self.board[r + i][c] == "-":
+                  p_moves.append(Move(((r, c), (r + i, c)), self.board))
+               elif self.board[r + i][c][0] == "w":
+                  p_moves.append(Move(((r, c), (r + i, c)), self.board))
+                  srun = False
+               else:
+                  srun = False
+         
+            if r - i < 0:
+               nrun = False
+            if nrun:
+               if self.board[r - i][c] == "-":
+                  p_moves.append(Move(((r, c), (r - i, c)), self.board))
+               elif self.board[r - i][c][0] == "w":
+                  p_moves.append(Move(((r, c), (r - i, c)), self.board))
+                  nrun = False
+               else:
+                  nrun = False
+
+            if 7 < c + i:
+               erun = False
+            if erun:
+               if self.board[r][c + i] == "-":
+                  p_moves.append(Move(((r, c), (r, c + i)), self.board))
+               elif self.board[r][c + i][0] == "w":
+                  p_moves.append(Move(((r, c), (r, c + i)), self.board))
+                  erun = False
+               else:
+                  erun = False
+
+            if c - i < 0:
+               wrun = False
+            if wrun:
+               if self.board[r][c - i] == "-":
+                  p_moves.append(Move(((r, c), (r, c - i)), self.board))
+               elif self.board[r][c - i][0] == "w":
+                  p_moves.append(Move(((r, c), (r, c - i)), self.board))
+                  wrun = False
+               else:
+                  wrun = False
+            i += 1
 
    def knight(self, r, c, p_moves):
-      pass
+      tmp = [(-2, 1), (-2, -1), (2, 1), (2, -1), (-1, 2), (1, 2), (-1, -2), (1, -2)]
+      if self.board[r][c][0] == "w":
+         for t in tmp:
+            if 0 <= r + t[0] < 8 and 0 <= c + t[1] < 8:
+               if self.board[r + t[0]][c + t[1]][0] != "w":
+                  p_moves.append(Move(((r, c), (r + t[0], c + t[1])), self.board))
+      else:
+         for t in tmp:
+            if 0 <= r + t[0] < 8 and 0 <= c + t[1] < 8:
+               if self.board[r + t[0]][c + t[1]][0] != "b":
+                  p_moves.append(Move(((r, c), (r + t[0], c + t[1])), self.board))
 
    def bishop(self, r, c, p_moves):
-      pass
+      i = 1
+      uL = uR = lL = lR = True
+      if self.board[r][c][0] == "w":
+         while uL or uR or lL or lR:
+            if r - i < 0 or c - i < 0:
+               uL = False
+            if uL:
+               if self.board[r - i][c - i] == "-":
+                  p_moves.append(Move(((r, c), (r - i, c - i)), self.board))
+               elif self.board[r - i][c - i][0] == "b":
+                  p_moves.append(Move(((r, c), (r - i, c - i)), self.board))
+                  uL = False
+               else:
+                  uL = False
+
+            if r - i < 0 or 7 < c + i:
+               uR = False
+            if uR:
+               if self.board[r - i][c + i] == "-":
+                  p_moves.append(Move(((r, c), (r - i, c + i)), self.board))
+               elif self.board[r - i][c + i][0] == "b":
+                  p_moves.append(Move(((r, c), (r - i, c + i)), self.board))
+                  uR = False
+               else:
+                  uR = False
+
+            if 7 < r + i or c - i < 0:
+               lL = False
+            if lL:
+               if self.board[r + i][c - i] == "-":
+                  p_moves.append(Move(((r, c), (r + i, c - i)), self.board))
+               elif self.board[r + i][c - i][0] == "b":
+                  p_moves.append(Move(((r, c), (r + i, c - i)), self.board))
+                  lL = False
+               else:
+                  lL = False
+
+            if 7 < r + i or 7 < c + i:
+               lR = False
+            if lR:
+               if self.board[r + i][c + i] == "-":
+                  p_moves.append(Move(((r, c), (r + i, c + i)), self.board))
+               elif self.board[r + i][c + i][0] == "b":
+                  p_moves.append(Move(((r, c), (r + i, c + i)), self.board))
+                  lR = False
+               else:
+                  lR = False
+            i += 1
+      else:
+         while uL or uR or lL or lR:
+            if 7 < r + i or 7 < c + i:
+               lR = False
+            if lR:
+               if self.board[r + i][c + i] == "-":
+                  p_moves.append(Move(((r, c), (r + i, c + i)), self.board))
+               elif self.board[r + i][c + i][0] == "w":
+                  p_moves.append(Move(((r, c), (r + i, c + i)), self.board))
+                  lR = False
+               else:
+                  lR = False
+
+            if 7 < r + i or c - i < 0:
+               lL = False
+            if lL:
+               if self.board[r + i][c - i] == "-":
+                  p_moves.append(Move(((r, c), (r + i, c - i)), self.board))
+               elif self.board[r + i][c - i][0] == "w":
+                  p_moves.append(Move(((r, c), (r + i, c - i)), self.board))
+                  lL = False
+               else:
+                  lL = False
+
+            if r - i < 0 or 7 < c + i:
+               uR = False
+            if uR:
+               if self.board[r - i][c + i] == "-":
+                  p_moves.append(Move(((r, c), (r - i, c + i)), self.board))
+               elif self.board[r - i][c + i][0] == "w":
+                  p_moves.append(Move(((r, c), (r - i, c + i)), self.board))
+                  uR = False
+               else:
+                  uR = False
+
+            if r - i < 0 or c - i < 0:
+               uL = False
+            if uL:
+               if self.board[r - i][c - i] == "-":
+                  p_moves.append(Move(((r, c), (r - i, c - i)), self.board))
+               elif self.board[r - i][c - i][0] == "w":
+                  p_moves.append(Move(((r, c), (r - i, c - i)), self.board))
+                  uL = False
+               else:
+                  uL = False
+            i += 1
 
    def king(self, r, c, p_moves):
-      pass
+      tmp = [
+         (-1, -1), (-1, 0), (-1, 1), (0, -1),
+         (0, 1), (1, -1), (1, 0), (1, 1)
+      ]
+      if self.board[r][c][0] == "w":
+         for t in tmp:
+            if 0 <= r + t[0] < 8 and 0 <= c + t[1] < 8:
+               if self.board[r + t[0]][c + t[1]][0] != "w":
+                  p_moves.append(Move(((r, c), (r + t[0], c + t[1])), self.board))
+      else:
+         for t in tmp:
+            if 0 <= r + t[0] < 8 and 0 <= c + t[1] < 8:
+               if self.board[r + t[0]][c + t[1]][0] != "b":
+                  p_moves.append(Move(((r, c), (r + t[0], c + t[1])), self.board))
 
    def queen(self, r, c, p_moves):
-      pass
+      self.rook(r, c, p_moves)
+      self.bishop(r, c, p_moves)
 
    def undo(self):
       if len(self.moves) != 0:
@@ -151,21 +358,23 @@ def main():
    print("Chess backend tests")
 
    game = Game()
-
+   game.board = [
+         ["-", "-", "-", "-", "-", "-", "-", "-"],
+         ["-", "-", "-", "-", "-", "-", "-", "-"],
+         ["-", "-", "-", "-", "-", "-", "-", "-"],
+         ["-", "-", "-", "-", "-", "-", "-", "-"],
+         ["-", "-", "-", "w_Q", "-", "-", "-", "-"],
+         ["-", "-", "-", "-", "-", "-", "-", "-"],
+         ["-", "-", "-", "-", "-", "-", "-", "-"],
+         ["-", "-", "-", "-", "-", "-", "-", "-"],
+      ]
    for x in game.board:
+      print(x)
+   print("--------------------------")
+   valids = game.getValid()
+   for x in valids:
       print(x)
    
-   clickLog = [(6, 1), (5, 1)]
-
-   mv = Move(clickLog, game.board)
-   print(mv)
-   game.mkMove(mv)
-
-   for x in game.board:
-      print(x)
-
-   print("--------------------------")
-   print(game.getAllPossible())
    
 if __name__ == "__main__":
    main()
