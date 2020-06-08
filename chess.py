@@ -40,17 +40,28 @@ def drawPieces(screen, imgs, board):
             screen.blit(imgs[board[r][c]], (6 + (75 * c), 6 + (75 * r)))
 
 
-def showTime(screen, font, colour, time, x, y):
-   text = font.render(f"{colour} time: {time}", True, (38, 38, 38))
-   screen.blit(text, (x, y))
+def showTime(screen, font, colour, timein, act, x, y):
+   col = [(38, 38, 38), (26, 255, 26)]
+   hdr = font.render(f"{colour} time:", True, col[0])
+   time = font.render(timein, True, col[act])
+   screen.blit(hdr, (x, y))
+   screen.blit(time, (x, y + 25))
 
 def showSel(screen, font, clickSel):
    text = font.render(f"Selected {clickSel}", True, (38, 38, 38))
    screen.blit(text, (250, 615))
 
 def showStatus(screen, font, status):
-   text = font.render(f"Status: {status}", True, (38, 38, 38))
-   screen.blit(text, (180, 650))
+   tmp = {
+      "Invalid move": 245, "": 0, "Max undo": 245, 
+      "Current turn: White": 220, "Current turn: Black": 220
+   }
+   try:
+      x = tmp[status]
+   except KeyError:
+      x = 250
+   text = font.render(status, True, (38, 38, 38))
+   screen.blit(text, (x, 650))
 
 def main():
    print("Chess Game running")
@@ -63,10 +74,10 @@ def main():
          status = "Disabled rule check"
       else:
          ruleOveride = False
-         status = "Noninal"
+         status = ""
    else:
       ruleOveride = False
-      status = "Nominal"
+      status = ""
 
    pygame.init()
    game = ch.Game()
@@ -78,22 +89,27 @@ def main():
    pygame.display.set_caption("Chess")
    icon = pygame.image.load("assets/chess_icon.png")
    pygame.display.set_icon(icon)
-   font = pygame.font.Font("freesansbold.ttf", 16)
+   font = pygame.font.Font("freesansbold.ttf", 18)
 
 
    w_time, b_time = ch.Time(), ch.Time()
+   w_act, b_act = 1, 0
    prev_t = 0
 
    drawGame(screen, imgs, game)
    clickSel, clickLog = (), []
    running = True
    while running:
+      pygame.time.delay(100)
+
       if game.white:
+         w_act, b_act = 1, 0
          ticks = pygame.time.get_ticks() // 1000
          if prev_t != ticks:
             w_time.add(1)
             prev_t = ticks
       else:
+         w_act, b_act = 0, 1
          ticks = pygame.time.get_ticks() // 1000
          if prev_t != ticks:
             b_time.add(1)
@@ -126,9 +142,9 @@ def main():
                      else:
                         clickSel, clickLog = (), []
                         if game.white:
-                           status = "Invalid move, white turn"
+                           status = "Invalid move"
                         else:
-                           status = "Invalid move, black turn"
+                           status = "Invalid move"
                else:
                   clickSel, clickLog = (), []
                   if game.white:
@@ -137,7 +153,7 @@ def main():
                      status = "Current turn: Black"
          elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_z:
-               game.undo()
+               status = game.undo()
                mvMade = True
 
       if mvMade:
@@ -146,8 +162,8 @@ def main():
 
 
       w_time_str, b_time_str = w_time.getTime(), b_time.getTime()
-      showTime(screen, font, "White", w_time_str, 20, 615)
-      showTime(screen, font, "Black", b_time_str, 400, 615)
+      showTime(screen, font, "White", w_time_str, w_act, 70, 615)
+      showTime(screen, font, "Black", b_time_str, b_act, 435, 615)
       showSel(screen, font, clickSel)
       showStatus(screen, font, status)
       drawGame(screen, imgs, game)

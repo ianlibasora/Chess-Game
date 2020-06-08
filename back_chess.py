@@ -22,11 +22,18 @@ class Game(object):
          "P": self.pawn, "R": self.rook, "N": self.knight,
          "B": self.bishop, "K": self.king, "Q": self.queen
       }
+      self.w_K, self.b_K = (7, 4), (0, 4)
+      self.cm, self.stale = False, False
+      
 
    def mkMove(self, other):
       self.board[other.start[0]][other.start[1]], self.board[other.end[0]][other.end[1]] = "-", other.p_moved
       self.moves.append(other)
       self.white = not self.white
+      if other.p_moved == "w_K":
+         self.w_K = (other.end[0], other.end[1])
+      elif other.p_moved == "b_K":
+         self.b_K = (other.end[0], other.end[1])
 
    def turnCheck(self, other):
       if self.white:
@@ -37,16 +44,46 @@ class Game(object):
    def clickCheck(self, lst):
       l, r = self.board[lst[0][0]][lst[0][1]][0], self.board[lst[1][0]][lst[1][1]][0]
       return l == r
+   
+   def inCheck(self):
+      if self.white:
+         return self.sqAttack(self.w_K[0], self.w_K[1])
+      else:
+         return self.sqAttack(self.b_K[0], self.b_K[1])
+
+   def sqAttack(self, r, c):
+      self.white = not self.white
+      oMoves = self.getAllPossible()
+      self.white = not self.white
+      for move in oMoves:
+         if move.end[0] == r and move.end[1] == c:
+            return True
+      return False
 
    def getValid(self):
-      return self.getAllPossible()
+      moves = self.getAllPossible()
+      for i in range(len(moves) - 1, -1, -1):
+         self.mkMove(moves[i])
+         self.white = not self.white
+         if self.inCheck():
+            moves.pop(i)
+         self.white = not self.white
+         self.undo()
+      if len(moves) == 0:
+         if self.inCheck():
+            self.cm = True
+         else:
+            self.stale = True
+      else:
+         self.cm, self.stale = False, False
+      return moves
 
    def getAllPossible(self):
       p_moves = []
       for r in range(8):
          for c in range(8):
             plyr, piece = self.board[r][c][0], self.board[r][c][-1]
-            if plyr != "-":
+            if (plyr == "w" and self.white) or (plyr == "b" and not self.white):
                self.dct[piece](r, c, p_moves)
       return p_moves
 
@@ -303,13 +340,16 @@ class Game(object):
 
    def undo(self):
       if len(self.moves) != 0:
-         last = self.moves[-1]
+         last = self.moves.pop()
          self.board[last.start[0]][last.start[1]], self.board[last.end[0]][last.end[1]] = last.p_moved, last.p_captured
-         print(f"Undid {last}")
-         self.moves.pop()
          self.white = not self.white
+         if last.p_moved == "w_K":
+            self.w_K = (last.start[0], last.start[1])
+         elif last.p_moved == "b_K":
+            self.b_K = (last.start[0], last.start[1])
+         return f"Undid {last}"
       else:
-         print("Max undo")
+         return "Max undo"
 
    @staticmethod
    def getIndex(inp):
@@ -339,7 +379,7 @@ class Move(object):
       self.moveID = self.start[0] * 1000 + self.start[1] * 100 + self.end[0] * 10 + self.end[1]
 
    def getNotation(self):
-      return f"{self.getRnkFile(self.start[0], self.start[1])} -> {self.getRnkFile(self.end[0], self.end[1])}"
+      return f"{self.getRnkFile(self.start[0], self.start[1])}, {self.getRnkFile(self.end[0], self.end[1])}"
 
    def getRnkFile(self, r, c):
       return self.ColToFile[c] + self.RowToRnk[r]
