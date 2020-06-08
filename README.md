@@ -14,6 +14,10 @@ If run with argument "1":
 - Movement assist (highlight available movements of piece) # maybe
 - Advanced rules: Promotion, # castling/en passent maybe
 
+### To-do:
+- Promotion, with choice
+- Check/Stale mate response
+
 ### Done:
 - Undo
 - Team check

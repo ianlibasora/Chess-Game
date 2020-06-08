@@ -53,7 +53,7 @@ def showSel(screen, font, clickSel):
 
 def showStatus(screen, font, status):
    tmp = {
-      "Invalid move": 245, "": 0, "Max undo": 245, 
+      "Invalid move": 245, "": 0, "Max undo": 245, "Disabled rule check": 220,
       "Current turn: White": 220, "Current turn: Black": 220
    }
    try:
@@ -61,7 +61,7 @@ def showStatus(screen, font, status):
    except KeyError:
       x = 250
    text = font.render(status, True, (38, 38, 38))
-   screen.blit(text, (x, 650))
+   screen.blit(text, (x, 640))
 
 def main():
    print("Chess Game running")
@@ -130,21 +130,27 @@ def main():
             if len(clickLog) == 2:
                mv = ch.Move(clickLog, game.board)
                if game.turnCheck(clickLog):
-                  if ruleOveride or mv in validMV:
+                  if ruleOveride:
                      game.mkMove(mv)
                      print(mv)
-                     mvMade = True
-                     clickSel, clickLog = (), []
-                     status = ""
+                     clickSel, clickLog, status, mvMade = (), [], "", True
                   else:
-                     if game.clickCheck(clickLog):
-                        clickLog = [clickSel]
-                     else:
-                        clickSel, clickLog = (), []
-                        if game.white:
-                           status = "Invalid move"
+                     for i in range(len(validMV) -1, -1, -1):
+                        if mv == validMV[i]:
+                           game.mkMove(validMV[i])
+                           print(mv)
+                           mvMade = True
+                           clickSel, clickLog = (), []
+                           status = ""
+                     if not mvMade:
+                        if game.clickCheck(clickLog):
+                           clickLog = [clickSel]
                         else:
-                           status = "Invalid move"
+                           clickSel, clickLog = (), []
+                           if game.white:
+                              status = "Invalid move"
+                           else:
+                              status = "Invalid move"
                else:
                   clickSel, clickLog = (), []
                   if game.white:
@@ -167,7 +173,7 @@ def main():
       showSel(screen, font, clickSel)
       showStatus(screen, font, status)
       drawGame(screen, imgs, game)
-      
+   
 
       pygame.display.update()
       screen.fill((191, 191, 191))

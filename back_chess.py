@@ -35,6 +35,10 @@ class Game(object):
       elif other.p_moved == "b_K":
          self.b_K = (other.end[0], other.end[1])
 
+      if other.promo:
+         self.board[other.end[0]][other.end[1]] = f"{other.p_moved[0]}_Q"
+
+
    def turnCheck(self, other):
       if self.white:
          return self.board[other[0][0]][other[0][1]][0] == "w"
@@ -62,7 +66,7 @@ class Game(object):
 
    def getValid(self):
       moves = self.getAllPossible()
-      for i in range(len(moves) - 1, -1, -1):
+      for i in range(len(moves) -1, -1, -1):
          self.mkMove(moves[i])
          self.white = not self.white
          if self.inCheck():
@@ -88,7 +92,7 @@ class Game(object):
       return p_moves
 
    def pawn(self, r, c, p_moves):
-      if self.board[r][c][0] == "w":
+      if self.white:
          if self.board[r - 1][c] == "-":
             p_moves.append(Move(((r, c), (r - 1, c)), self.board))
             if r == 6 and self.board[r - 2][c] == "-":
@@ -116,7 +120,7 @@ class Game(object):
    def rook(self ,r, c, p_moves):
       i = 1
       nrun = srun = erun = wrun = True
-      if self.board[r][c][0] == "w":
+      if self.white:
          while nrun or srun or erun or wrun:
             if r - i < 0:
                nrun = False
@@ -211,7 +215,7 @@ class Game(object):
 
    def knight(self, r, c, p_moves):
       tmp = [(-2, 1), (-2, -1), (2, 1), (2, -1), (-1, 2), (1, 2), (-1, -2), (1, -2)]
-      if self.board[r][c][0] == "w":
+      if self.white:
          for t in tmp:
             if 0 <= r + t[0] < 8 and 0 <= c + t[1] < 8:
                if self.board[r + t[0]][c + t[1]][0] != "w":
@@ -225,7 +229,7 @@ class Game(object):
    def bishop(self, r, c, p_moves):
       i = 1
       uL = uR = lL = lR = True
-      if self.board[r][c][0] == "w":
+      if self.white:
          while uL or uR or lL or lR:
             if r - i < 0 or c - i < 0:
                uL = False
@@ -323,7 +327,7 @@ class Game(object):
          (-1, -1), (-1, 0), (-1, 1), (0, -1),
          (0, 1), (1, -1), (1, 0), (1, 1)
       ]
-      if self.board[r][c][0] == "w":
+      if self.white:
          for t in tmp:
             if 0 <= r + t[0] < 8 and 0 <= c + t[1] < 8:
                if self.board[r + t[0]][c + t[1]][0] != "w":
@@ -371,12 +375,15 @@ class Move(object):
    }
    ColToFile = {v: k for k, v in FileToCol.items()}
 
-   def __init__(self, clickLog, board):
+   def __init__(self, clickLog, board, prom=False):
       self.start = (clickLog[0][0], clickLog[0][1])
       self.end = (clickLog[1][0], clickLog[1][1])
       self.p_moved = board[self.start[0]][self.start[1]]
       self.p_captured = board[self.end[0]][self.end[1]]
-      self.moveID = self.start[0] * 1000 + self.start[1] * 100 + self.end[0] * 10 + self.end[1]
+      self.moveID = (self.start[0] * 1000) + (self.start[1] * 100) + (self.end[0] * 10) + (self.end[1])
+      self.promo = prom
+      if (self.p_moved == "w_P" and self.end[0] == 0) or (self.p_moved == "b_P" and self.end[1] == 0):
+         self.promo = True
 
    def getNotation(self):
       return f"{self.getRnkFile(self.start[0], self.start[1])}, {self.getRnkFile(self.end[0], self.end[1])}"
@@ -439,10 +446,6 @@ def main():
    for x in valids:
       print(x)
 
-   one = Time(0, 0, 10)
-   print(one)
-   one.add(3600)
-   print(one)
    
 if __name__ == "__main__":
    main()
