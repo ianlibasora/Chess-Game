@@ -30,9 +30,13 @@ class Game(object):
 
    def turnCheck(self, other):
       if self.white:
-         return (self.board[other[0][0]][other[0][1]][0] == "w" and self.board[other[1][0]][other[1][1]][0] != "w")
+         return self.board[other[0][0]][other[0][1]][0] == "w"
       else:
-         return (self.board[other[0][0]][other[0][1]][0] == "b" and self.board[other[1][0]][other[1][1]][0] != "b")
+         return self.board[other[0][0]][other[0][1]][0] == "b"
+
+   def clickCheck(self, lst):
+      l, r = self.board[lst[0][0]][lst[0][1]][0], self.board[lst[1][0]][lst[1][1]][0]
+      return l == r
 
    def getValid(self):
       return self.getAllPossible()
@@ -307,12 +311,6 @@ class Game(object):
       else:
          print("Max undo")
 
-   def nextPlyr(self):
-      if self.white:
-         print("Next move: White")
-      else:
-         print("Next move: Black")
-
    @staticmethod
    def getIndex(inp):
       (y, x) = inp[1] // 75, inp[0] // 75
@@ -354,6 +352,32 @@ class Move(object):
    def __str__(self):
       return self.getNotation()
 
+class Time(object):
+   def __init__(self, h=0, m=0, s=0):
+      self.h, self.m, self.s = h, m, s
+
+   def add(self, other):
+      secs = self.t2s()
+      self.h, self.m, self.s = self.s2t(secs + other)
+
+   def t2s(self):
+      h, m, s = self.h, self.m, self.s
+      out = (h * 3600) + (m * 60) + s
+      return out
+
+   def getTime(self):
+      return "{:02d} : {:02d} : {:02d}".format(self.h, self.m, self.s)
+
+   @staticmethod
+   def s2t(s):
+      m, s = divmod(s, 60)
+      h, m = divmod(m, 60)
+      over, h = divmod(h, 24)
+      return (h, m, s)
+
+   def __str__(self):
+      return "{:02d} : {:02d} : {:02d}".format(self.h, self.m, self.s)
+
 def main():
    print("Chess backend tests")
 
@@ -374,7 +398,11 @@ def main():
    valids = game.getValid()
    for x in valids:
       print(x)
-   
+
+   one = Time(0, 0, 10)
+   print(one)
+   one.add(3600)
+   print(one)
    
 if __name__ == "__main__":
    main()

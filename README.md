@@ -1,35 +1,31 @@
 # Chess-Game with Python
 
-Classic game of chess using Python's PyGame module.
-
-If run with argument "1":
-- Rule checking will be ignored ie players may move at their own will. This includes illegal moves
-- Team checking will remain in effect. This is to stop double clicks on pieces of same colour
+Classic game of chess using Python's PyGame module. Intended to be player with two people. Does not feature AI for single player.
 
 ## WIP 
+
+If run with argument "1":
+- Rule checking will be ignored ie players may move at their own will. This includes illegal moves.
+- Team checking however will remain in effect.
 
 ### Planned:
 - Log win/loss of session
 - Allowing rematch # maybe
 - Movement check (move validity check)
 - Movement assist (highlight available movements of piece)
-- Game timer
-- Promotion, # castling/en passent maybe
-
-### Needs:
-- Rule checks
-- Running ui
+- Advanced rules: Promotion, # castling/en passent maybe
 
 ### Done:
 - Undo
 - Team check
 - Basic piece behaviour
+- Game timer
+- Basic UI
 
-Last updated: 3.Jun.2020, Python 3.8.1
+Last updated: 8.Jun.2020, Python 3.8.1
 
 --------------------------------------------------------------
-
-## Assets used:
+### Assets used:
 - [Black][1]/[White][2] Pawns
 - [Black][3]/[White][4] Rooks
 - [Black][5]/[White][6] Horses
