@@ -1,9 +1,18 @@
 #!/usr/bin/env python3
 
-"""Chess game engine"""
+"""
+Chess game engine for PyGame. Provides game engine for chess game operation. Intended for 
+2 person multiplayer. Does not include AI for singleplayer. For details, refer to the
+README.md file.
+
+
+Last updated: 9.Jun.2020, Python 3.8.1
+By Joseph Libasora
+"""
 
 import pygame
 
+"""Game class - Holds/controls game running status"""
 class Game(object):
    def __init__(self):
       self.board = [
@@ -24,20 +33,25 @@ class Game(object):
       }
       self.w_K, self.b_K = (7, 4), (0, 4)
       self.cm, self.stale = False, False
-      self.enPpos = ()      
+      self.enPpos = ()
+      self.castleR = Castle(True, True, True, True)
+      self.castleRLog = [Castle(self.castleR.wR, self.castleR.bR, self.castleR.wL, self.castleR.bL)]
 
    def mkMove(self, other):
       self.board[other.start[0]][other.start[1]], self.board[other.end[0]][other.end[1]] = "-", other.p_moved
       self.moves.append(other)
       self.white = not self.white
+      # Logging king positions
       if other.p_moved == "w_K":
          self.w_K = (other.end[0], other.end[1])
       elif other.p_moved == "b_K":
          self.b_K = (other.end[0], other.end[1])
 
+      # Promotions
       if other.promo:
          self.board[other.end[0]][other.end[1]] = f"{other.p_moved[0]}_{other.pChoice}"
-      
+
+      # En passent
       if other.enPmv:
          self.board[other.start[0]][other.end[1]] = "-"
       if other.p_moved[-1] == "P" and abs(other.start[0] - other.end[0]) == 2:
@@ -45,24 +59,64 @@ class Game(object):
       else:
          self.enPpos = ()
 
+      # Castling
+      if other.castle:
+         if other.end[1] - other.start[1] == 2:
+            self.board[other.end[0]][other.end[1] - 1], self.board[other.end[0]][other.end[1] + 1] = self.board[other.end[0]][other.end[1] + 1], "-"
+         else:
+            self.board[other.end[0]][other.end[1] + 1], self.board[other.end[0]][other.end[1] - 2] = self.board[other.end[0]][other.end[1] - 2], "-"
+      self.updateCastleR(other)
+      self.castleRLog.append(Castle(self.castleR.wR, self.castleR.bR, self.castleR.wL, self.castleR.bL))
+
    def undo(self):
       if len(self.moves) != 0:
          last = self.moves.pop()
          self.board[last.start[0]][last.start[1]], self.board[last.end[0]][last.end[1]] = last.p_moved, last.p_captured
          self.white = not self.white
+         # King position logging
          if last.p_moved == "w_K":
             self.w_K = (last.start[0], last.start[1])
          elif last.p_moved == "b_K":
             self.b_K = (last.start[0], last.start[1])
 
+         # En passent
          if last.enPmv:
             self.board[last.end[0]][last.end[1]], self.board[last.start[0]][last.end[1]] = "-", last.p_captured
             self.enPpos = (last.end[0], last.end[1])
          if last.p_moved[-1] == "P" and abs(last.start[0] - last.end[0]) == 2:
             self.enPpos = ()
+
+         # Castling
+         self.castleRLog.pop()
+         newR = self.castleRLog[-1]
+         self.castleR = Castle(newR.wR, newR.bR, newR.wL, newR.bL)
+         if last.castle:
+            if last.end[1] - last.start[1] == 2:
+               self.board[last.end[0]][last.end[1] + 1], self.board[last.end[0]][last.end[1] - 1] = self.board[last.end[0]][last.end[1] - 1], "-"
+            else:
+               self.board[last.end[0]][last.end[1] - 2], self.board[last.end[0]][last.end[1] + 1] = self.board[last.end[0]][last.end[1] + 1], "-"
+
          return f"Undid {last}"
       else:
          return "Max undo"
+
+   def updateCastleR(self, other):
+      if other.p_moved == "w_K":
+         self.castleR.wR, self.castleR.wL = False, False
+      elif other.p_moved == "b_K":
+         self.castleR.bR, self.castleR.bL = False, False
+      elif other.p_moved == "w_R":
+         if other.start[0] == 7:
+            if other.start[1] == 0:
+               self.castleR.wL = False
+            elif other.start[1] == 7:
+               self.castleR.wR = False
+      elif other.p_moved == "b_R":
+         if other.start[0] == 0:
+            if other.start[1] == 0:
+               self.castleR.wL = False
+            elif other.start[1] == 7:
+               self.castleR.wR = False
 
    def turnCheck(self, other):
       if self.white:
@@ -73,7 +127,7 @@ class Game(object):
    def clickCheck(self, lst):
       l, r = self.board[lst[0][0]][lst[0][1]][0], self.board[lst[1][0]][lst[1][1]][0]
       return l == r
-   
+
    def inCheck(self):
       if self.white:
          return self.sqAttack(self.w_K[0], self.w_K[1])
@@ -93,9 +147,16 @@ class Game(object):
             return True
       return False
 
+   """getValid(), getAllPossible() calculate all rule valid moves"""
    def getValid(self):
-      tmp_enP = self.enPpos
+      """Work around: tmp vars used to solve issues with move calculation. Values replaced again at function end."""
+      tmp_enP, tmp_castleR = self.enPpos, Castle(self.castleR.wR, self.castleR.bR, self.castleR.wL, self.castleR.bL)
       moves = self.getAllPossible()
+      if self.white:
+         self.castleMV(self.w_K[0], self.w_K[1], moves)
+      else:
+         self.castleMV(self.b_K[0], self.b_K[1], moves)
+
       for i in range(len(moves) -1, -1, -1):
          self.mkMove(moves[i])
          self.white = not self.white
@@ -110,7 +171,7 @@ class Game(object):
             self.stale = True
       else:
          self.cm, self.stale = False, False
-      self.enPpos = tmp_enP
+      self.enPpos, self.castleR = tmp_enP, tmp_castleR
       return moves
 
    def getAllPossible(self):
@@ -122,13 +183,14 @@ class Game(object):
                self.dct[piece](r, c, p_moves)
       return p_moves
 
+   """Returning all valid moves for each respective piece. Includes castling."""
    def pawn(self, r, c, p_moves):
       if self.white:
          if self.board[r - 1][c] == "-":
             p_moves.append(Move(((r, c), (r - 1, c)), self.board))
             if r == 6 and self.board[r - 2][c] == "-":
                p_moves.append(Move(((r, c), (r - 2, c)), self.board))
-         
+
          if 0 <= c - 1:
             if self.board[r - 1][c - 1][0] == "b":
                p_moves.append(Move(((r, c), (r - 1, c - 1)), self.board))
@@ -144,7 +206,7 @@ class Game(object):
             p_moves.append(Move(((r, c), (r + 1, c)), self.board))
             if r == 1 and self.board[r + 2][c] == "-":
                p_moves.append(Move(((r, c), (r + 2, c)), self.board))
-         
+
          if 0 <= c - 1:
             if self.board[r + 1][c - 1][0] == "w":
                p_moves.append(Move(((r, c), (r + 1, c - 1)), self.board))
@@ -171,7 +233,7 @@ class Game(object):
                   nrun = False
                else:
                   nrun = False
-            
+
             if 7 < r + i:
                srun = False
             if srun:
@@ -182,7 +244,7 @@ class Game(object):
                   srun = False
                else:
                   srun = False
-            
+
             if c - i < 0:
                wrun = False
             if wrun:
@@ -193,7 +255,7 @@ class Game(object):
                   wrun = False
                else:
                   wrun = False
-            
+
             if 7 < c + i:
                erun = False
             if erun:
@@ -217,7 +279,7 @@ class Game(object):
                   srun = False
                else:
                   srun = False
-         
+
             if r - i < 0:
                nrun = False
             if nrun:
@@ -361,6 +423,10 @@ class Game(object):
                   uL = False
             i += 1
 
+   def queen(self, r, c, p_moves):
+      self.rook(r, c, p_moves)
+      self.bishop(r, c, p_moves)
+
    def king(self, r, c, p_moves):
       tmp = [
          (-1, -1), (-1, 0), (-1, 1), (0, -1),
@@ -377,10 +443,25 @@ class Game(object):
                if self.board[r + t[0]][c + t[1]][0] != "b":
                   p_moves.append(Move(((r, c), (r + t[0], c + t[1])), self.board))
 
-   def queen(self, r, c, p_moves):
-      self.rook(r, c, p_moves)
-      self.bishop(r, c, p_moves)
+   def castleMV(self, r, c, p_moves):
+      if self.sqAttack(r, c):
+         return
+      if (self.white and self.castleR.wR) or (not self.white and self.castleR.bR):
+         self.castle_R(r, c, p_moves)
+      if (self.white and self.castleR.wL) or (not self.white and self.castleR.bL):
+         self.castle_L(r, c, p_moves)
+   
+   def castle_L(self, r, c, p_moves):
+      if self.board[r][c - 1] == "-" and self.board[r][c - 2] == "-" and self.board[r][c - 3] == "-":
+         if not self.sqAttack(r, c - 1) and not self.sqAttack(r, c - 2):
+            p_moves.append(Move(((r, c), (r, c - 2)), self.board, castle=True))
 
+   def castle_R(self, r, c, p_moves):
+      if self.board[r][c + 1] == "-" and self.board[r][c + 2] == "-":
+         if not self.sqAttack(r, c + 1) and not self.sqAttack(r, c + 2):
+            p_moves.append(Move(((r, c), (r, c + 2)), self.board, castle=True))
+
+   # Helper methods for game operation
    @staticmethod
    def getIndex(inp):
       (y, x) = inp[1] // 75, inp[0] // 75
@@ -395,6 +476,7 @@ class Game(object):
          return (y, x)
       return None
 
+"""Move class manages piece movements. Also holds attributes for special game rule functions"""
 class Move(object):
    RnkToRow = {
       "1": 7, "2":6, "3": 5, "4": 4,
@@ -407,7 +489,7 @@ class Move(object):
    }
    ColToFile = {v: k for k, v in FileToCol.items()}
 
-   def __init__(self, clickLog, board, pChoice="", enP=False):
+   def __init__(self, clickLog, board, pChoice="", enP=False, castle=False):
       self.start = (clickLog[0][0], clickLog[0][1])
       self.end = (clickLog[1][0], clickLog[1][1])
       self.p_moved = board[self.start[0]][self.start[1]]
@@ -418,7 +500,9 @@ class Move(object):
       self.enPmv = enP
       if self.enPmv:
          self.p_captured = "w_P" if self.p_moved == "b_P" else "b_P"
+      self.castle = castle
 
+   # Helper methods for game operation/game ui
    def getNotation(self):
       return f"{self.getRnkFile(self.start[0], self.start[1])}, {self.getRnkFile(self.end[0], self.end[1])}"
 
@@ -433,6 +517,12 @@ class Move(object):
    def __str__(self):
       return self.getNotation()
 
+"""Castle class manages game castling status"""
+class Castle(object):
+   def __init__(self, wR, bR, wL, bL):
+      self.wR, self.bR, self.wL, self.bL = wR, bR, wL, bL
+
+"""Time class, manages game timer"""
 class Time(object):
    def __init__(self, h=0, m=0, s=0):
       self.h, self.m, self.s = h, m, s
@@ -443,11 +533,17 @@ class Time(object):
 
    def t2s(self):
       h, m, s = self.h, self.m, self.s
-      out = (h * 3600) + (m * 60) + s
-      return out
+      return (h * 3600) + (m * 60) + s
 
    def getTime(self):
       return "{:02d}:{:02d}:{:02d}".format(self.h, self.m, self.s)
+
+   @classmethod
+   def s2newT(cls, s):
+      m, s = divmod(s, 60)
+      h, m = divmod(m, 60)
+      over, h = divmod(h, 24)
+      return cls(h, m, s)
 
    @staticmethod
    def s2t(s):
@@ -456,11 +552,15 @@ class Time(object):
       over, h = divmod(h, 24)
       return (h, m, s)
 
+   def __add__(self, other):
+      tmp = self.t2s() + other.t2s()
+      return self.s2newT(tmp)
+
    def __str__(self):
-      return "{:02d} : {:02d} : {:02d}".format(self.h, self.m, self.s)
+      return "{:02d}:{:02d}:{:02d}".format(self.h, self.m, self.s)
 
 def main():
-   print("Chess backend tests")
+   print(" ------ Chess engine backend tests ------ ")
 
    game = Game()
    game.board = [
@@ -479,6 +579,6 @@ def main():
    valids = game.getValid()
    for x in valids:
       print(x)
-   
+
 if __name__ == "__main__":
    main()

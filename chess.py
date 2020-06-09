@@ -1,6 +1,19 @@
 #!/usr/bin/env python3
 
-"""Chess game"""
+"""
+Chess game using PyGame module. Main game program for chess game. Intended for 2
+person multiplayer. Does not include AI for singleplayer. For details, refer to 
+the README.md file.
+
+
+Gameplay:
+ * Mouseclick based GUI. Click respective pieces to move.
+ * Undo button: z
+
+
+Last updated: 9.Jun.2020, Python 3.8.1
+By Joseph Libasora
+"""
 
 import back_chess as ch
 import pygame
@@ -78,30 +91,33 @@ def main():
    print("Chess Game running")
    # other stuff here
       
-
+   # Game init & game var declaration
    pygame.init()
    game = ch.Game()
    imgs = LoadImg()
    validMV = game.getValid()
    mvMade = promo = False
 
+   # Game screen init
    screen = pygame.display.set_mode((600, 750))
    pygame.display.set_caption("Chess")
    icon = pygame.image.load("assets/chess_icon.png")
    pygame.display.set_icon(icon)
    font = pygame.font.Font("freesansbold.ttf", 22)
 
-
+   # Game time init
    w_time, b_time = ch.Time(), ch.Time()
    w_act, b_act = 1, 0
    prev_t = 0
 
+   # Game starter drawing funct. calls
    drawGame(screen, imgs, game)
    clickSel, clickLog, status = (), [], ""
    running = True
    while running:
       pygame.time.delay(100)
 
+      # Game timer
       if game.white:
          w_act, b_act = 1, 0
          ticks = pygame.time.get_ticks() // 1000
@@ -131,6 +147,7 @@ def main():
             else:
                pos = game.choiceIndex(pos)
             
+            # Separate branch to deal w/ promotion
             if not promo:
                if len(clickLog) == 2:
                   mv = ch.Move(clickLog, game.board)
@@ -167,16 +184,19 @@ def main():
                      promo, status, mvMade, mvRun = False, "", True, False
                   i += 1
          elif event.type == pygame.KEYDOWN:
+            # Undo key, z
             if event.key == pygame.K_z:
                status = game.undo()
                mvMade = True
                if promo:
                   promo = False
 
+      # Move made, refresh new valid moves
       if mvMade:
          validMV = game.getValid()
          mvMade = False
 
+      # Game drawing function calls
       w_time_str, b_time_str = w_time.getTime(), b_time.getTime()
       showTime(screen, font, "White", w_time_str, w_act, 60, 615)
       showTime(screen, font, "Black", b_time_str, b_act, 435, 615)
@@ -187,10 +207,12 @@ def main():
       drawGame(screen, imgs, game)
 
       pygame.display.update()
-      screen.fill((191, 191, 191))
+      screen.fill((179, 179, 179))
 
    pygame.quit()
-   print("Game exit")   
+   print(" ------ Chess game exit ------ ")
+   t_time = w_time + b_time
+   print(f"Total game time: {t_time}")   
 
 if __name__ == "__main__":
    main()
