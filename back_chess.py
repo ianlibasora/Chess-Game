@@ -24,7 +24,7 @@ class Game(object):
       }
       self.w_K, self.b_K = (7, 4), (0, 4)
       self.cm, self.stale = False, False
-      
+      self.enPpos = ()      
 
    def mkMove(self, other):
       self.board[other.start[0]][other.start[1]], self.board[other.end[0]][other.end[1]] = "-", other.p_moved
@@ -37,6 +37,32 @@ class Game(object):
 
       if other.promo:
          self.board[other.end[0]][other.end[1]] = f"{other.p_moved[0]}_{other.pChoice}"
+      
+      if other.enPmv:
+         self.board[other.start[0]][other.end[1]] = "-"
+      if other.p_moved[-1] == "P" and abs(other.start[0] - other.end[0]) == 2:
+         self.enPpos = ((other.start[0] + other.end[0]) // 2, other.end[1])
+      else:
+         self.enPpos = ()
+
+   def undo(self):
+      if len(self.moves) != 0:
+         last = self.moves.pop()
+         self.board[last.start[0]][last.start[1]], self.board[last.end[0]][last.end[1]] = last.p_moved, last.p_captured
+         self.white = not self.white
+         if last.p_moved == "w_K":
+            self.w_K = (last.start[0], last.start[1])
+         elif last.p_moved == "b_K":
+            self.b_K = (last.start[0], last.start[1])
+
+         if last.enPmv:
+            self.board[last.end[0]][last.end[1]], self.board[last.start[0]][last.end[1]] = "-", last.p_captured
+            self.enPpos = (last.end[0], last.end[1])
+         if last.p_moved[-1] == "P" and abs(last.start[0] - last.end[0]) == 2:
+            self.enPpos = ()
+         return f"Undid {last}"
+      else:
+         return "Max undo"
 
    def turnCheck(self, other):
       if self.white:
@@ -68,6 +94,7 @@ class Game(object):
       return False
 
    def getValid(self):
+      tmp_enP = self.enPpos
       moves = self.getAllPossible()
       for i in range(len(moves) -1, -1, -1):
          self.mkMove(moves[i])
@@ -83,6 +110,7 @@ class Game(object):
             self.stale = True
       else:
          self.cm, self.stale = False, False
+      self.enPpos = tmp_enP
       return moves
 
    def getAllPossible(self):
@@ -104,9 +132,13 @@ class Game(object):
          if 0 <= c - 1:
             if self.board[r - 1][c - 1][0] == "b":
                p_moves.append(Move(((r, c), (r - 1, c - 1)), self.board))
+            elif (r - 1, c - 1) == self.enPpos:
+               p_moves.append(Move(((r, c), (r - 1, c - 1)), self.board, enP=True))
          if c + 1 < 8:
             if self.board[r - 1][c + 1][0] == "b":
                p_moves.append(Move(((r, c), (r - 1, c + 1)), self.board))
+            elif (r - 1, c + 1) == self.enPpos:
+               p_moves.append(Move(((r, c), (r - 1, c + 1)), self.board, enP=True))
       else:
          if self.board[r + 1][c] == "-":
             p_moves.append(Move(((r, c), (r + 1, c)), self.board))
@@ -116,9 +148,13 @@ class Game(object):
          if 0 <= c - 1:
             if self.board[r + 1][c - 1][0] == "w":
                p_moves.append(Move(((r, c), (r + 1, c - 1)), self.board))
+            elif (r + 1, c - 1) == self.enPpos:
+               p_moves.append(Move(((r, c), (r + 1, c - 1)), self.board, enP=True))
          if c + 1 < 8:
             if self.board[r + 1][c + 1][0] == "w":
                p_moves.append(Move(((r, c), (r + 1, c + 1)), self.board))
+            elif (r + 1, c + 1) == self.enPpos:
+               p_moves.append(Move(((r, c), (r + 1, c + 1)), self.board, enP=True))
 
    def rook(self ,r, c, p_moves):
       i = 1
@@ -345,19 +381,6 @@ class Game(object):
       self.rook(r, c, p_moves)
       self.bishop(r, c, p_moves)
 
-   def undo(self):
-      if len(self.moves) != 0:
-         last = self.moves.pop()
-         self.board[last.start[0]][last.start[1]], self.board[last.end[0]][last.end[1]] = last.p_moved, last.p_captured
-         self.white = not self.white
-         if last.p_moved == "w_K":
-            self.w_K = (last.start[0], last.start[1])
-         elif last.p_moved == "b_K":
-            self.b_K = (last.start[0], last.start[1])
-         return f"Undid {last}"
-      else:
-         return "Max undo"
-
    @staticmethod
    def getIndex(inp):
       (y, x) = inp[1] // 75, inp[0] // 75
@@ -384,16 +407,17 @@ class Move(object):
    }
    ColToFile = {v: k for k, v in FileToCol.items()}
 
-   def __init__(self, clickLog, board, pChoice=""):
+   def __init__(self, clickLog, board, pChoice="", enP=False):
       self.start = (clickLog[0][0], clickLog[0][1])
       self.end = (clickLog[1][0], clickLog[1][1])
       self.p_moved = board[self.start[0]][self.start[1]]
       self.p_captured = board[self.end[0]][self.end[1]]
       self.moveID = (self.start[0] * 1000) + (self.start[1] * 100) + (self.end[0] * 10) + (self.end[1])
       self.pChoice = pChoice
-      self.promo = False
-      if (self.p_moved == "w_P" and self.end[0] == 0) or (self.p_moved == "b_P" and self.end[0] == 7):
-         self.promo = True
+      self.promo = (self.p_moved == "w_P" and self.end[0] == 0) or (self.p_moved == "b_P" and self.end[0] == 7)
+      self.enPmv = enP
+      if self.enPmv:
+         self.p_captured = "w_P" if self.p_moved == "b_P" else "b_P"
 
    def getNotation(self):
       return f"{self.getRnkFile(self.start[0], self.start[1])}, {self.getRnkFile(self.end[0], self.end[1])}"
@@ -455,8 +479,6 @@ def main():
    valids = game.getValid()
    for x in valids:
       print(x)
-      print(x.promo, x.p_moved, x.end)
-
    
 if __name__ == "__main__":
    main()

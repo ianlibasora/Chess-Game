@@ -177,7 +177,6 @@ def main():
          validMV = game.getValid()
          mvMade = False
 
-
       w_time_str, b_time_str = w_time.getTime(), b_time.getTime()
       showTime(screen, font, "White", w_time_str, w_act, 60, 615)
       showTime(screen, font, "Black", b_time_str, b_act, 435, 615)
@@ -186,14 +185,12 @@ def main():
       if promo:
          showPromo(screen, imgs, game)
       drawGame(screen, imgs, game)
-   
 
       pygame.display.update()
       screen.fill((191, 191, 191))
 
    pygame.quit()
-   print("Game exit")
-   
+   print("Game exit")   
 
 if __name__ == "__main__":
    main()

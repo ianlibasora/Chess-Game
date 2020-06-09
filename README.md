@@ -19,9 +19,9 @@ Classic game of chess using Python's PyGame module. Intended to be player with t
 - Game timer
 - Basic UI
 - Basic rule checks
-- Promotion w/ choice
+- Promotion w/ choice, en passent
 
-Last updated: 8.Jun.2020, Python 3.8.1
+Last updated: 9.Jun.2020, Python 3.8.1
 
 --------------------------------------------------------------
 ### Assets used:
