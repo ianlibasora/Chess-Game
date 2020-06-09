@@ -4,18 +4,12 @@ Classic game of chess using Python's PyGame module. Intended to be player with t
 
 ## WIP 
 
-If run with argument "1":
-- Rule checking will be ignored ie players may move at their own will. This includes illegal moves.
-- Team checking however will remain in effect.
-
 ### Planned:
 - Log win/loss of session
-- Allowing rematch # maybe
 - Movement assist (highlight available movements of piece) # maybe
 - Advanced rules: Promotion, # castling/en passent maybe
 
 ### To-do:
-- Promotion, with choice
 - Check/Stale mate response
 
 ### Done:
@@ -25,6 +19,7 @@ If run with argument "1":
 - Game timer
 - Basic UI
 - Basic rule checks
+- Promotion w/ choice
 
 Last updated: 8.Jun.2020, Python 3.8.1
 

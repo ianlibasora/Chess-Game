@@ -36,8 +36,7 @@ class Game(object):
          self.b_K = (other.end[0], other.end[1])
 
       if other.promo:
-         self.board[other.end[0]][other.end[1]] = f"{other.p_moved[0]}_Q"
-
+         self.board[other.end[0]][other.end[1]] = f"{other.p_moved[0]}_{other.pChoice}"
 
    def turnCheck(self, other):
       if self.white:
@@ -54,6 +53,10 @@ class Game(object):
          return self.sqAttack(self.w_K[0], self.w_K[1])
       else:
          return self.sqAttack(self.b_K[0], self.b_K[1])
+
+   def gtChoice(self, other):
+      tmp = {2: "Q", 3: "R", 4: "N", 5: "B"}
+      return tmp[other[1]]
 
    def sqAttack(self, r, c):
       self.white = not self.white
@@ -360,8 +363,14 @@ class Game(object):
       (y, x) = inp[1] // 75, inp[0] // 75
       if y < 0 or 7 < y or x < 0 or 7 < x:
          return None
-      else:
+      return (y, x)
+
+   @staticmethod
+   def choiceIndex(inp):
+      (y, x) = inp[1] // 75, inp[0] // 75
+      if y == 9 and 1 < x < 6:
          return (y, x)
+      return None
 
 class Move(object):
    RnkToRow = {
@@ -375,14 +384,15 @@ class Move(object):
    }
    ColToFile = {v: k for k, v in FileToCol.items()}
 
-   def __init__(self, clickLog, board, prom=False):
+   def __init__(self, clickLog, board, pChoice=""):
       self.start = (clickLog[0][0], clickLog[0][1])
       self.end = (clickLog[1][0], clickLog[1][1])
       self.p_moved = board[self.start[0]][self.start[1]]
       self.p_captured = board[self.end[0]][self.end[1]]
       self.moveID = (self.start[0] * 1000) + (self.start[1] * 100) + (self.end[0] * 10) + (self.end[1])
-      self.promo = prom
-      if (self.p_moved == "w_P" and self.end[0] == 0) or (self.p_moved == "b_P" and self.end[1] == 0):
+      self.pChoice = pChoice
+      self.promo = False
+      if (self.p_moved == "w_P" and self.end[0] == 0) or (self.p_moved == "b_P" and self.end[0] == 7):
          self.promo = True
 
    def getNotation(self):
@@ -413,7 +423,7 @@ class Time(object):
       return out
 
    def getTime(self):
-      return "{:02d} : {:02d} : {:02d}".format(self.h, self.m, self.s)
+      return "{:02d}:{:02d}:{:02d}".format(self.h, self.m, self.s)
 
    @staticmethod
    def s2t(s):
@@ -431,10 +441,10 @@ def main():
    game = Game()
    game.board = [
          ["-", "-", "-", "-", "-", "-", "-", "-"],
+         ["-", "-", "-", "-", "-", "w_P", "-", "-"],
          ["-", "-", "-", "-", "-", "-", "-", "-"],
          ["-", "-", "-", "-", "-", "-", "-", "-"],
          ["-", "-", "-", "-", "-", "-", "-", "-"],
-         ["-", "-", "-", "w_Q", "-", "-", "-", "-"],
          ["-", "-", "-", "-", "-", "-", "-", "-"],
          ["-", "-", "-", "-", "-", "-", "-", "-"],
          ["-", "-", "-", "-", "-", "-", "-", "-"],
@@ -445,6 +455,7 @@ def main():
    valids = game.getValid()
    for x in valids:
       print(x)
+      print(x.promo, x.p_moved, x.end)
 
    
 if __name__ == "__main__":
