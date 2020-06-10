@@ -9,6 +9,7 @@ README.md file.
 Last updated: 10.Jun.2020, Python 3.8.1
 By Joseph Libasora
 """
+
 import pygame
 
 class Game(object):
@@ -100,6 +101,7 @@ class Game(object):
          return "Max undo"
 
    def updateCastleR(self, other):
+      # Update castling rights
       if other.p_moved == "w_K":
          self.castleR.wR, self.castleR.wL = False, False
       elif other.p_moved == "b_K":
@@ -473,6 +475,16 @@ class Game(object):
       (y, x) = inp[1] // 75, inp[0] // 75
       if y == 9 and 1 < x < 6:
          return (y, x)
+      return None
+
+   @staticmethod
+   def endIndex(inp):
+      (y, x) = inp[1] // 75, inp[0] // 75
+      if y == 9:
+         if x == 0 or x == 1:
+            return True
+         elif x == 6 or x == 7:
+            return False
       return None
 
 class Move(object):
