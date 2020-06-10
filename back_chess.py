@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Chess game engine for PyGame. Provides game engine for chess game operation. Intended for 
+Chess game engine for PyGame. Provides game engine for chess game operation. Intended for
 2 person multiplayer. Does not include AI for singleplayer. For details, refer to the
 README.md file.
 
@@ -451,7 +451,7 @@ class Game(object):
          self.castle_R(r, c, p_moves)
       if (self.white and self.castleR.wL) or (not self.white and self.castleR.bL):
          self.castle_L(r, c, p_moves)
-   
+
    def castle_L(self, r, c, p_moves):
       if self.board[r][c - 1] == "-" and self.board[r][c - 2] == "-" and self.board[r][c - 3] == "-":
          if not self.sqAttack(r, c - 1) and not self.sqAttack(r, c - 2):

@@ -2,7 +2,7 @@
 
 """
 Chess game using PyGame module. Main game program for chess game. Intended for 2
-person multiplayer. Does not include AI for singleplayer. For details, refer to 
+person multiplayer. Does not include AI for singleplayer. For details, refer to
 the README.md file.
 
 
@@ -85,7 +85,7 @@ def showStatus(screen, font, status):
    dct = {
       "Invalid move": 245, "": 0, "Max undo": 245, "Disabled rule check": 220,
       "Current turn: White": 205, "Current turn: Black": 205,
-      "Checkmate: white wins": 190, "Checkmate: black wins": 190, 
+      "Checkmate: white wins": 190, "Checkmate: black wins": 190,
       "Draw, stalemate": 218, "Check": 265
    }
    cols = [(38, 38, 38), (255, 51, 51)]
@@ -128,7 +128,7 @@ def main():
    print("- Reset button: r")
    print("\n                     By Joseph Libasora")
    print("Last updated: 10.Jun.2020, Python 3.8.1")
-   print("---------------------------------------")
+   print(" ------------------------------------- \n")
 
    # Game init & game var. init
    pygame.init()
@@ -152,7 +152,8 @@ def main():
 
    # Game starter drawing funct. calls
    drawGame(screen, imgs, game, validMV, clickSel)
-   
+   print(" ------------ Match start ------------ ")
+
    running = True
    while running:
       pygame.time.delay(100)
@@ -190,7 +191,7 @@ def main():
                else:
                   # Promotion menu mouse-clicks
                   pos = game.choiceIndex(pos)
-               
+
                # Separate branch to deal w/ promotion
                if not promo:
                   if len(clickLog) == 2:
@@ -232,6 +233,11 @@ def main():
                choice = game.endIndex(pos)
                if choice:
                   # Game reset
+                  t_time = w_time + b_time
+                  print(" ------------ Match reset ------------ ")
+                  print(f"Total game time: {t_time}\n")
+                  print(" ------------ Match start ------------ ")
+
                   game = ch.Game()
                   validMV = game.getValid()
                   mvMade = promo = endgame = False
@@ -241,7 +247,7 @@ def main():
                   prev_t = 0
                elif choice is False:
                   running = False
-         
+
          elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_z:
                # Undo key, z
@@ -254,6 +260,11 @@ def main():
                   endgame = False
             if event.key == pygame.K_r:
                # Reset button: r
+               t_time = w_time + b_time
+               print(" ------------ Match reset ------------ ")
+               print(f"Total game time: {t_time}\n")
+               print(" ------------ Match start ------------ ")
+
                game = ch.Game()
                validMV = game.getValid()
                mvMade = promo = endgame = False
@@ -268,7 +279,7 @@ def main():
          if game.inCheck():
             status = "Check"
          mvMade = False
-      
+
       # Checkmate/Stalement
       if game.cm:
          endgame = True
@@ -282,7 +293,7 @@ def main():
       w_time_str, b_time_str = w_time.getTime(), b_time.getTime()
       showTime(screen, font, "White", w_time_str, w_act, 55, 615)
       showTime(screen, font, "Black", b_time_str, b_act, 440, 615)
-      
+
       # Current selected fct. call
       showSel(screen, font, clickSel)
 
@@ -292,7 +303,7 @@ def main():
       # Promotion msg. fct. call
       if promo:
          showPromo(screen, imgs, game)
-      
+
       # Endgame screen
       if endgame:
          t_time = w_time + b_time
@@ -304,9 +315,9 @@ def main():
       screen.fill((179, 179, 179))
 
    pygame.quit()
-   print(" ---------- Chess game exit ---------- ")
    t_time = w_time + b_time
-   print(f"Total game time: {t_time}")   
+   print(" ------------- Match end ------------- ")
+   print(f"Total game time: {t_time}\n")
 
 if __name__ == "__main__":
    main()
