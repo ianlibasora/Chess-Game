@@ -1,7 +1,7 @@
 # Chess-Game with Python
 # WIP 
 
-Classic game of chess using Python's PyGame module. Intended for two player multiplayer. Does not feature AI for single player. Includes move validation against chess rules. Also includes advanced piece behaviour, such as promotion. Game assets used referenced below.
+Classic game of chess using Python's PyGame module. Intended for two player multiplayer. Does not feature AI for single player. Includes move validation against chess rules. Also includes advanced piece behaviour, such as promotion. Game can be restarted and moves undone at any time. Game assets used referenced below.
 
 
 ## Gameplay mechanics:
@@ -9,6 +9,8 @@ Basic gameplay:
 - Mouse-click based GUI
 - Click respective pieces to move
 - Undo button: z
+- End of match: Rematch available, WIP
+- Restart button: r, WIP
 
 
 Advanced gameplay:
@@ -17,24 +19,16 @@ Advanced gameplay:
 - Castling
 
 
-### Planned:
-- Log win/loss of session
-- Movement assist (highlight available movements of piece) # maybe
-
-
-### To-do:
-- Check/Stale mate response
-
-
 ### Done:
 - Undo
 - Team check
 - Game timer
 - Basic GUI
 - Advanced behaviour: Promotion w/ choice, en passent, castling
+- Movement assist (highlight available movements of piece)
 
 
-Last updated: 9.Jun.2020, Python 3.8.1
+Last updated: 10.Jun.2020, Python 3.8.1
 
 By Joseph Libasora
 

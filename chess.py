@@ -7,11 +7,12 @@ the README.md file.
 
 
 Gameplay:
- * Mouseclick based GUI. Click respective pieces to move.
- * Undo button: z
+- Mouseclick based GUI. Click respective pieces to move.
+- Undo button: z
+- Restart button: r
 
 
-Last updated: 9.Jun.2020, Python 3.8.1
+Last updated: 10.Jun.2020, Python 3.8.1
 By Joseph Libasora
 """
 
@@ -30,12 +31,11 @@ def LoadImg():
       imgs[x] = pygame.image.load(f"assets/{x}.png")
    return imgs
 
-
-def drawGame(screen, imgs, game):
+def drawGame(screen, imgs, game, validMV, clickSel):
    pygame.draw.line(screen, pygame.Color("black"), (0, 600), (600, 600), 4)
    drawBoard(screen)
+   selHighlight(screen, game, validMV, clickSel)
    drawPieces(screen, imgs, game.board)
-
 
 def drawBoard(screen):
    cols = [pygame.Color("white"), pygame.Color("grey")]
@@ -44,13 +44,32 @@ def drawBoard(screen):
          col = cols[(r + c) % 2]
          pygame.draw.rect(screen, col, pygame.Rect(c * 75, r * 75, 75, 75))
 
-
 def drawPieces(screen, imgs, board):
    for r in range(8):
       for c in range(8):
          if board[r][c] != "-":
             screen.blit(imgs[board[r][c]], (6 + (75 * c), 6 + (75 * r)))
 
+def selHighlight(screen, game, validMV, clickSel):
+   if clickSel != ():
+      r, c = clickSel
+      if game.board[r][c][0] == ("w" if game.white else "b"):
+         surf = pygame.Surface((75, 75))
+         surf.set_alpha(100)
+         surf.fill((77, 255, 77))
+         screen.blit(surf, (c * 75, r * 75))# highlight sq sel.
+
+         for move in validMV:
+            if move.start[0] == r and move.start[1] == c:
+               if game.board[move.end[0]][move.end[1]][0] !=  "-" and game.board[move.end[0]][move.end[1]][0] != ("w" if game.white else "b"):
+                  surf.fill((255, 51, 51))
+                  screen.blit(surf, (75 * move.end[1], 75 * move.end[0]))# highlight avail. moves (n. attack)
+               elif move.p_captured[-1] == "P":
+                  surf.fill((255, 51, 51))
+                  screen.blit(surf, (75 * move.end[1], 75 * move.end[0]))# highlight avail. moves (enP. attack)
+               else:
+                  surf.fill((255, 255, 153))
+                  screen.blit(surf, (75 * move.end[1], 75 * move.end[0]))# highlight avail. moves (normal)
 
 def showTime(screen, font, colour, timein, act, x, y):
    col = [(38, 38, 38), (26, 255, 26)]
@@ -91,12 +110,13 @@ def main():
    print("Chess Game running")
    # other stuff here
       
-   # Game init & game var declaration
+   # Game init & game var. init
    pygame.init()
    game = ch.Game()
    imgs = LoadImg()
    validMV = game.getValid()
    mvMade = promo = False
+   clickSel, clickLog, status = (), [], ""
 
    # Game screen init
    screen = pygame.display.set_mode((600, 750))
@@ -111,25 +131,26 @@ def main():
    prev_t = 0
 
    # Game starter drawing funct. calls
-   drawGame(screen, imgs, game)
-   clickSel, clickLog, status = (), [], ""
+   drawGame(screen, imgs, game, validMV, clickSel)
+   
    running = True
    while running:
       pygame.time.delay(100)
 
       # Game timer
-      if game.white:
-         w_act, b_act = 1, 0
-         ticks = pygame.time.get_ticks() // 1000
-         if prev_t != ticks:
-            w_time.add(1)
-            prev_t = ticks
-      else:
-         w_act, b_act = 0, 1
-         ticks = pygame.time.get_ticks() // 1000
-         if prev_t != ticks:
-            b_time.add(1)
-            prev_t = ticks
+      if not game.cm:
+         if game.white:
+            w_act, b_act = 1, 0
+            ticks = pygame.time.get_ticks() // 1000
+            if prev_t != ticks:
+               w_time.add(1)
+               prev_t = ticks
+         else:
+            w_act, b_act = 0, 1
+            ticks = pygame.time.get_ticks() // 1000
+            if prev_t != ticks:
+               b_time.add(1)
+               prev_t = ticks
 
       for event in pygame.event.get():
          if event.type == pygame.QUIT:
@@ -196,16 +217,24 @@ def main():
          validMV = game.getValid()
          mvMade = False
 
-      # Game drawing function calls
+
+      # Game time fct. calls
       w_time_str, b_time_str = w_time.getTime(), b_time.getTime()
       showTime(screen, font, "White", w_time_str, w_act, 60, 615)
       showTime(screen, font, "Black", b_time_str, b_act, 435, 615)
+      
+      # Current selected fct. call
       showSel(screen, font, clickSel)
+
+      # Game status fct. call
       showStatus(screen, font, status)
+
+      # Promotion msg. fct. call
       if promo:
          showPromo(screen, imgs, game)
-      drawGame(screen, imgs, game)
-
+      
+      # Main game drawing fct. call
+      drawGame(screen, imgs, game, validMV, clickSel)
       pygame.display.update()
       screen.fill((179, 179, 179))
 

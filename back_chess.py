@@ -6,14 +6,13 @@ Chess game engine for PyGame. Provides game engine for chess game operation. Int
 README.md file.
 
 
-Last updated: 9.Jun.2020, Python 3.8.1
+Last updated: 10.Jun.2020, Python 3.8.1
 By Joseph Libasora
 """
-
 import pygame
 
-"""Game class - Holds/controls game running status"""
 class Game(object):
+   """Game class - Holds/controls game running status"""
    def __init__(self):
       self.board = [
          ["b_R", "b_N", "b_B", "b_Q", "b_K", "b_B", "b_N", "b_R"],
@@ -476,8 +475,8 @@ class Game(object):
          return (y, x)
       return None
 
-"""Move class manages piece movements. Also holds attributes for special game rule functions"""
 class Move(object):
+   """Move class manages piece movements. Also holds attributes for special game rule functions"""
    RnkToRow = {
       "1": 7, "2":6, "3": 5, "4": 4,
       "5": 3, "6": 2, "7": 1, "8": 0
@@ -517,13 +516,13 @@ class Move(object):
    def __str__(self):
       return self.getNotation()
 
-"""Castle class manages game castling status"""
 class Castle(object):
+   """Castle class manages game castling status"""
    def __init__(self, wR, bR, wL, bL):
       self.wR, self.bR, self.wL, self.bL = wR, bR, wL, bL
 
-"""Time class, manages game timer"""
 class Time(object):
+   """Time class, manages game timer"""
    def __init__(self, h=0, m=0, s=0):
       self.h, self.m, self.s = h, m, s
 
