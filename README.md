@@ -1,6 +1,6 @@
 # Chess-Game with Python
 
-Classic game of chess using Python's PyGame module. Intended for two player multiplayer. Does not feature AI for single player. Includes movement rule checking. Also includes movement assist with piece highlightiing. Allows for advanced piece behaviour eg. such as promotion. Game can be restarted and moves undone at any time. Game assets used referenced below.
+Classic game of chess using Python's PyGame module. Requires the Python PyGame module. Intended for two player multiplayer. Does not feature AI for single player. Includes movement rule checking. Also includes movement assist with piece highlightiing. Allows for advanced piece behaviour eg. such as promotion. Game can be restarted and moves undone at any time. Game assets used referenced below.
 
 ## Gameplay mechanics:
 Basic gameplay:
