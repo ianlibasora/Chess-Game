@@ -22,7 +22,7 @@ Advanced gameplay:
 - Movement assist
 - Rule checking
 
-Last updated: 10.Jun.2020, Python 3.8.1
+Last updated: 10.Jun.2020, Python 3.8.3
 
 By Joseph Libasora
 

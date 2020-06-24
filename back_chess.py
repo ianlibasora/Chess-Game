@@ -6,7 +6,7 @@ Chess game engine for PyGame. Provides game engine for chess game operation. Int
 README.md file.
 
 
-Last updated: 10.Jun.2020, Python 3.8.1
+Last updated: 10.Jun.2020, Python 3.8.3
 By Joseph Libasora
 """
 
